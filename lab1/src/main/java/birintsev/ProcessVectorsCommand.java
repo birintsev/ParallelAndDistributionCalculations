@@ -71,6 +71,7 @@ public class ProcessVectorsCommand implements Runnable {
         LOGGER.info(
             "Vector processing duration: "
                 + Duration.ofMillis(duration)
+                + "(" + duration + " ms)"
         );
     }
 
