@@ -142,7 +142,7 @@ public class ProcessVectorsCommand implements Runnable {
                     continue;
                 }
                 threadToIndexes.get(thrNum - 1).add(vectElem - 1);
-                takenElems.add(vectElem - 1);
+                takenElems.add(vectElem);
             }
         }
         return threadToIndexes;
