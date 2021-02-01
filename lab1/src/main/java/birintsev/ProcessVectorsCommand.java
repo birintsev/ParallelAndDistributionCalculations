@@ -65,7 +65,7 @@ public class ProcessVectorsCommand implements Runnable {
             );
 
         startTime = System.currentTimeMillis();
-        vectorProcessors.forEach(VectorProcessor::run);
+        vectorProcessors.stream().map(Thread::new).forEach(Thread::start);
         duration = System.currentTimeMillis() - startTime;
 
         LOGGER.info(
