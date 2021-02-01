@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @CommandLine.Command(name = "start", description = "Starts the work")
 public class ProcessVectorsCommand implements Runnable {
@@ -63,9 +64,24 @@ public class ProcessVectorsCommand implements Runnable {
                 vector,
                 result
             );
-
         startTime = System.currentTimeMillis();
-        vectorProcessors.stream().map(Thread::new).forEach(Thread::start);
+
+        vectorProcessors
+            .stream()
+            .map(Thread::new)
+            .peek(Thread::start)
+            .collect(Collectors.toList())
+            .forEach(
+                startedThread -> {
+                    try {
+                        startedThread.join();
+                    } catch (Exception e) {
+                        LOGGER.error(e.getMessage(), e);
+                        throw new RuntimeException(e);
+                    }
+                }
+            );
+
         duration = System.currentTimeMillis() - startTime;
 
         LOGGER.info(
@@ -136,7 +152,7 @@ public class ProcessVectorsCommand implements Runnable {
         for (int thrNum = 0; thrNum < threadCount; thrNum++) {
             threadToIndexes.put(thrNum, new HashSet<>());
         }
-        for (int thrNum = 1; thrNum <= threadCount; thrNum++) {
+        for (int thrNum = threadCount; thrNum >= 1; thrNum--) {
             for (int vectElem = vectorLength; vectElem >= 1; vectElem--) {
                 if (vectElem % thrNum != 0 || takenElems.contains(vectElem)) {
                     continue;
