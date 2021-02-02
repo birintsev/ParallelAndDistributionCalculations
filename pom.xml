@@ -72,7 +72,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>${mainClass}</mainClass>
+                            <mainClass>${start-class}</mainClass>
                         </manifest>
                     </archive>
                     <finalName>${project.build.finalName}</finalName>
