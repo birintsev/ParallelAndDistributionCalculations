@@ -8,7 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import static java.lang.Math.ceil;
+import static java.lang.Math.floor;
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.sqrt;
 
@@ -53,7 +54,7 @@ implements PrimeNumbersParallelGenerator {
      * @return all prime numbers that belong to [2; sqrt(maxNumber)] interval
      * */
     private List<Integer> findBasePrimes(int maxNumber) {
-        int sqrtMax = ceilSqrt(maxNumber);
+        int sqrtMax = floorSqrt(maxNumber);
         List<Integer> basePrimes = new ArrayList<>();
         boolean[] isNotPrime = new boolean[sqrtMax + 1];
         for (int integer = 2; integer <= sqrtMax; integer++) {
@@ -74,25 +75,26 @@ implements PrimeNumbersParallelGenerator {
 
     private List<Integer> findPrimesParallel(int maxNumber, int threadNumber) {
         List<Integer> basePrimes = findBasePrimes(maxNumber);
-        List<Integer> primes = new ArrayList<>();
-        List<Integer> primeCandidates = range(ceilSqrt(maxNumber), maxNumber);
+        List<Integer> primes = new ArrayList<>(basePrimes);
+        List<Integer> primeCandidates = range(
+            max(floorSqrt(maxNumber), MIN_PRIMAL)
+            , maxNumber
+        );
         List<Finder> threads =
             splitPrimeCandidatesByThreads(
                 basePrimes,
                 primeCandidates,
                 threadNumber
-            )
-                .stream()
-                .peek(Finder::start)
-                .peek(thread -> {
-                    try {
-                        thread.join();
-                    } catch (Exception e) {
-                        LOGGER.error(e.getMessage(), e);
-                        throw new RuntimeException(e);
-                    }
-                })
-                .collect(Collectors.toList());
+            );
+        threads.forEach(Finder::start);
+        threads.forEach(thread -> {
+            try {
+                thread.join();
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
+                throw new RuntimeException(e);
+            }
+        });
         threads.forEach(
             finder -> primes.addAll(finder.getPrimes())
         );
@@ -104,15 +106,16 @@ implements PrimeNumbersParallelGenerator {
         List<Integer> primeCandidates,
         int threadNumber
     ) {
+        int effectiveThreadNumber = Math.min(threadNumber, primeCandidates.size());
         List<Finder> threads = new ArrayList<>();
-        int numbersPerThread = primeCandidates.size() / threadNumber;
-        for (int i = 0; i < threadNumber; i+= numbersPerThread) {
+        int numbersPerThread = primeCandidates.size() / effectiveThreadNumber;
+        for (int i = 0; i < primeCandidates.size(); i+= numbersPerThread) {
             threads.add(
                 new Finder(
                     primeCandidates.subList(
                         i,
                         min(
-                            i + numbersPerThread - 1,
+                            i + numbersPerThread,
                             primeCandidates.size()
                         )
                     ),
@@ -123,13 +126,13 @@ implements PrimeNumbersParallelGenerator {
         return threads;
     }
 
-    private int ceilSqrt(int i) {
-        return (int) ceil(sqrt(i));
+    private int floorSqrt(int i) {
+        return (int) floor(sqrt(i));
     }
 
     private static List<Integer> range(int fromInclusive, int toInclusive) {
         return IntStream
-            .range(fromInclusive, toInclusive)
+            .range(fromInclusive, toInclusive + 1)
             .boxed()
             .collect(Collectors.toList());
     }
@@ -152,6 +155,12 @@ implements PrimeNumbersParallelGenerator {
 
         @Override
         public void run() {
+            LOGGER.info(
+                Thread.currentThread().getName()
+                    + " started to search for primes."
+                    + " Range to search is: "
+                    + FindPrimesCommand.listToString(candidates)
+            );
             List<Integer> _primes;
             int min;
             int max;

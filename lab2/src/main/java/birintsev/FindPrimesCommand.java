@@ -46,9 +46,8 @@ public class FindPrimesCommand implements Runnable {
 
         LOGGER.info(
             "Prime numbers: "
-                + primesToString(primes)
-                + System.lineSeparator()
-                + "Time spent: "
+                + listToString(primes)
+                + ". Time spent: "
                 + Duration.ofMillis(duration)
                 + " ("
                 + duration
@@ -56,7 +55,7 @@ public class FindPrimesCommand implements Runnable {
         );
     }
 
-    private String primesToString(List<Integer> primes) {
+    public static String listToString(List<Integer> primes) {
         final int maxListPrintLength = 1000;
         List<Integer> list = new ArrayList<>(primes);
         String s;
