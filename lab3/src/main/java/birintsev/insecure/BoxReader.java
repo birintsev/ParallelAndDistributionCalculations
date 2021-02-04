@@ -9,7 +9,7 @@ public class BoxReader<T> extends Thread {
         BoxReader.class
     );
 
-    private Box<T> box;
+    private volatile Box<T> box;
 
     public BoxReader(Box<T> readFrom) {
         this.box = readFrom;

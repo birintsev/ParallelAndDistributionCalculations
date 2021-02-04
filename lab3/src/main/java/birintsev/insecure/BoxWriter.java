@@ -9,7 +9,7 @@ public class BoxWriter<T> extends Thread {
         BoxWriter.class
     );
 
-    private final Box<T> box;
+    private volatile Box<T> box;
 
     private final T item;
 
@@ -31,6 +31,7 @@ public class BoxWriter<T> extends Thread {
                 throw new RuntimeException(e);
             }
         }
-        LOGGER.info(threadName + " put to the box is: " + item);
+        box.set(item);
+        LOGGER.info(threadName + " put to the box: " + item);
     }
 }
