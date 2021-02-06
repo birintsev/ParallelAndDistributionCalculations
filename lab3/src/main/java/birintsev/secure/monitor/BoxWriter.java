@@ -27,14 +27,16 @@ public class BoxWriter<T> extends Thread {
                 if (box.isEmpty()) {
                     box.set(item);
                     LOGGER.info(threadName + ": has written " + item);
+                    box.notifyAll();
                     break;
+                } else {
+                    try {
+                        box.wait(1000);
+                    } catch (InterruptedException e) {
+                        LOGGER.error(e.getMessage(), e);
+                        throw new RuntimeException(e);
+                    }
                 }
-            }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw new RuntimeException(e);
             }
         }
     }
