@@ -26,16 +26,17 @@ public class Command implements Runnable {
 
     private final int maxItemsToReadWrite;
 
-    private final Box<Integer> box;
 
     public Command(@Value("${maxItemsToReadWrite}") int maxItemsToReadWrite) {
         this.maxItemsToReadWrite = maxItemsToReadWrite;
-        box = new Box<>();
     }
 
     @Override
     public void run() {
-        Semaphore semaphore = new Semaphore(1);
+        Box<Integer> box = new Box<>(null);
+
+        Semaphore boxWasWritten = new Semaphore(0);
+        Semaphore boxWasRead = new Semaphore(1);
 
         List<BoxWriter<Integer>> boxWriters;
         List<BoxReader<Integer>> boxReaders;
@@ -45,8 +46,18 @@ public class Command implements Runnable {
 
         validate();
 
-        boxWriters = generateWriters(itemsToReadWrite, box, semaphore);
-        boxReaders = generateReaders(itemsToReadWrite, box, semaphore);
+        boxWriters = generateWriters(
+            itemsToReadWrite,
+            box,
+            boxWasWritten,
+            boxWasRead
+        );
+        boxReaders = generateReaders(
+            itemsToReadWrite,
+            box,
+            boxWasWritten,
+            boxWasRead
+        );
 
         writersThread = new Thread(() -> {
             for (BoxWriter<Integer> boxWriter : boxWriters) {
@@ -107,11 +118,12 @@ public class Command implements Runnable {
     private List<BoxReader<Integer>> generateReaders(
         int number,
         Box<Integer> box,
-        Semaphore semaphore
+        Semaphore boxWasWritten,
+        Semaphore boxWasRead
     ) {
         List<BoxReader<Integer>> readers = new ArrayList<>(number);
         for (int i = 0; i < number; i++) {
-            readers.add(new BoxReader<>(box, semaphore));
+            readers.add(new BoxReader<>(box, boxWasWritten, boxWasRead));
         }
         return readers;
     }
@@ -119,11 +131,12 @@ public class Command implements Runnable {
     private List<BoxWriter<Integer>> generateWriters(
         int number,
         Box<Integer> box,
-        Semaphore semaphore
+        Semaphore boxWasWritten,
+        Semaphore boxWasRead
     ) {
         List<BoxWriter<Integer>> writers = new ArrayList<>(number);
         for (int i = 0; i < number; i++) {
-            writers.add(new BoxWriter<>(box, i, semaphore));
+            writers.add(new BoxWriter<>(box, i, boxWasWritten, boxWasRead));
         }
         return writers;
     }

@@ -10,44 +10,38 @@ public class BoxWriter<T> extends Thread {
         BoxWriter.class
     );
 
-    private volatile Semaphore semaphore;
+    private volatile Semaphore boxWasWritten;
+
+    private volatile Semaphore boxWasRead;
 
     private volatile Box<T> box;
 
     private final T item;
 
-    public BoxWriter(Box<T> writeTo, T writeWhat, Semaphore semaphore) {
+    public BoxWriter(
+        Box<T> writeTo,
+        T writeWhat,
+        Semaphore boxWasWritten,
+        Semaphore boxWasRead
+    ) {
         this.box = writeTo;
         this.item = writeWhat;
-        this.semaphore = semaphore;
+        this.boxWasWritten = boxWasWritten;
+        this.boxWasRead = boxWasRead;
     }
 
     @Override
     public void run() {
         final String threadName =
             "[WRITER] " + Thread.currentThread().getName();
-        boolean hasWritten = false;
-        while (!hasWritten) {
-            try {
-                semaphore.acquire();
-            } catch (InterruptedException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw new RuntimeException(e);
-            }
-            if (!box.isEmpty()) {
-                try {
-                    semaphore.release();
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    throw new RuntimeException(e);
-                }
-            } else {
-                box.set(item);
-                hasWritten = true;
-                semaphore.release();
-                LOGGER.info(threadName + " has written: " + item);
-            }
+        try {
+            boxWasRead.acquire();
+            box.set(item);
+            LOGGER.info(threadName + " has written: " + item);
+            boxWasWritten.release();
+        } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
 }

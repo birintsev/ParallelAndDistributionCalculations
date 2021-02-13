@@ -10,42 +10,35 @@ public class BoxReader<T> extends Thread {
         BoxReader.class
     );
 
-    private volatile Semaphore semaphore;
+    private volatile Semaphore boxWasWritten;
+
+    private volatile Semaphore boxWasRead;
 
     private volatile Box<T> box;
 
-    public BoxReader(Box<T> readFrom, Semaphore semaphore) {
+    public BoxReader(
+        Box<T> readFrom,
+        Semaphore boxWasWritten,
+        Semaphore boxWasRead
+    ) {
         this.box = readFrom;
-        this.semaphore = semaphore;
+        this.boxWasWritten = boxWasWritten;
+        this.boxWasRead = boxWasRead;
     }
 
     @Override
     public void run() {
         final String threadName =
             "[READER] " + Thread.currentThread().getName();
-        boolean hasRead = false;
         T item;
-        while (!hasRead) {
-            try {
-                semaphore.acquire();
-            } catch (InterruptedException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw new RuntimeException(e);
-            }
-            if (box.isEmpty()) {
-                try {
-                    semaphore.release();
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    throw new RuntimeException(e);
-                }
-            } else {
-                item = box.get();
-                hasRead = true;
-                semaphore.release();
-                LOGGER.info(threadName + " has read: " + item);
-            }
+        try {
+            boxWasWritten.acquire();
+            item = box.get();
+            LOGGER.info(threadName + " has read: " + item);
+            boxWasRead.release();
+        } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
 }
