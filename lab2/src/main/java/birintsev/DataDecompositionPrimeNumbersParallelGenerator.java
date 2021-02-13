@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import static java.lang.Math.floor;
@@ -109,7 +110,8 @@ implements PrimeNumbersParallelGenerator {
         int effectiveThreadNumber = Math.min(threadNumber, primeCandidates.size());
         List<Finder> threads = new ArrayList<>();
         int numbersPerThread = primeCandidates.size() / effectiveThreadNumber;
-        for (int i = 0; i < primeCandidates.size(); i+= numbersPerThread) {
+        int i = 0;
+        for (int t = 0; t < effectiveThreadNumber; t++, i+= numbersPerThread) {
             threads.add(
                 new Finder(
                     primeCandidates.subList(
@@ -122,6 +124,19 @@ implements PrimeNumbersParallelGenerator {
                     basePrimes
                 )
             );
+        }
+        if (i < primeCandidates.size()) {
+            threads
+                .stream()
+                .findAny()
+                .orElseThrow(
+                    () -> new RuntimeException(
+                        "No threads found. Unexpected exception."
+                    )
+                )
+                .candidates.addAll(
+                    primeCandidates.subList(i, primeCandidates.size())
+                );
         }
         return threads;
     }
@@ -149,8 +164,12 @@ implements PrimeNumbersParallelGenerator {
             List<Integer> candidates,
             List<Integer> basePrimes
         ) {
-            this.candidates = candidates;
-            this.basePrimes = basePrimes;
+            this.candidates = new CopyOnWriteArrayList<>(
+                candidates
+            );
+            this.basePrimes = new CopyOnWriteArrayList<>(
+                basePrimes
+            );
         }
 
         @Override

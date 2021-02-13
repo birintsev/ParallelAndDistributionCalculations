@@ -9,6 +9,7 @@ import picocli.CommandLine;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @CommandLine.Command(name = "primals")
 @Component
