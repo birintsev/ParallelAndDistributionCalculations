@@ -33,6 +33,8 @@ public class Command implements Runnable {
 
     @Override
     public void run() {
+        long startTime;
+        long duration;
         Box<Integer> box = new Box<>(null);
 
         Semaphore boxWasWritten = new Semaphore(0);
@@ -59,6 +61,7 @@ public class Command implements Runnable {
             boxWasRead
         );
 
+        startTime = System.currentTimeMillis();
         writersThread = new Thread(() -> {
             for (BoxWriter<Integer> boxWriter : boxWriters) {
                 boxWriter.start();
@@ -97,6 +100,8 @@ public class Command implements Runnable {
             LOGGER.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
+        duration = System.currentTimeMillis() - startTime;
+        LOGGER.info("Time took: " + duration + "ms");
     }
 
     private void validate() {
