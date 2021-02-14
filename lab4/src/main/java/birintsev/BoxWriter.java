@@ -31,15 +31,9 @@ public class BoxWriter<T> extends Thread {
 
     @Override
     public void run() {
+        MultiboxManager<T> manager = multiBox.getManager();
         for (T item : itemsToWrite) {
-            multiBox.getManager().add(item, writerPriority);
-            //LOGGER.info(
-            //    threadName
-            //        + " has added item ("
-            //        + item
-            //        + ") to be written to the multibox"
-            //);
+            manager.add(item, writerPriority);
         }
-        //LOGGER.info(threadName + " has written all the items: " + itemsToWrite);
     }
 }

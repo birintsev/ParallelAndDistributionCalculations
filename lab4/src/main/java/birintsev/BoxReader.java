@@ -48,8 +48,4 @@ public class BoxReader<T> extends Thread {
                 + accumulator
         );
     }
-
-    public int getReaderPriority() {
-        return readerPriority;
-    }
 }

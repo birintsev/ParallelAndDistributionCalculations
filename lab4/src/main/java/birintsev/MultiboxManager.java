@@ -193,9 +193,6 @@ public class MultiboxManager<T> {
                         }
                     }
                     readPriorityPair.setValue(multibox.get());
-                    //LOGGER.info(
-                    //    threadName + " has read: " + readPriorityPair.getValue()
-                    //);
                 }
                 synchronized (readPriorityPair) {
                     // telling that it's OK, and other threads
