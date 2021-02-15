@@ -123,10 +123,10 @@ public class MultiboxManager<T> {
                 synchronized (writeQueue) {
                     while (writeQueue.isEmpty()) {
                         try {
-                            LOGGER.info(
-                                threadName
-                                    + " the queue is empty. Waiting..."
-                            );
+                            //LOGGER.info(
+                            //    threadName
+                            //        + " the queue is empty. Waiting..."
+                            //);
                             writeQueue.wait(WAIT_TIMEOUT);
                         } catch (InterruptedException e) {
                             LOGGER.error(e.getMessage(), e);
@@ -138,10 +138,10 @@ public class MultiboxManager<T> {
                 synchronized (multibox) {
                     while (multibox.getSize() == multibox.getMaxSize()) {
                         try {
-                            LOGGER.info(
-                                threadName
-                                    + " the box is full. Waiting..."
-                            );
+                            //LOGGER.info(
+                            //    threadName
+                            //        + " the box is full. Waiting..."
+                            //);
                             multibox.wait(WAIT_TIMEOUT);
                         } catch (InterruptedException e) {
                             LOGGER.error(e.getMessage(), e);
@@ -149,7 +149,7 @@ public class MultiboxManager<T> {
                         }
                     }
                     multibox.add(itemToWrite);
-                    LOGGER.info(threadName + " has written: " + itemToWrite);
+                    //LOGGER.info(threadName + " has written: " + itemToWrite);
                 }
             }
         }
@@ -167,10 +167,10 @@ public class MultiboxManager<T> {
                 synchronized (readQueue) {
                     while (readQueue.isEmpty()) {
                         try {
-                            LOGGER.info(
-                                threadName
-                                    + " the queue is empty. Waiting..."
-                            );
+                            //LOGGER.info(
+                            //    threadName
+                            //        + " the queue is empty. Waiting..."
+                            //);
                             readQueue.wait(WAIT_TIMEOUT);
                         } catch (InterruptedException e) {
                             LOGGER.error(e.getMessage(), e);
@@ -182,10 +182,10 @@ public class MultiboxManager<T> {
                 synchronized (multibox) {
                     while (multibox.isEmpty()) {
                         try {
-                            LOGGER.info(
-                                threadName
-                                    + " the box is empty. Waiting..."
-                            );
+                            //LOGGER.info(
+                            //    threadName
+                            //        + " the box is empty. Waiting..."
+                            //);
                             multibox.wait(WAIT_TIMEOUT);
                         } catch (InterruptedException e) {
                             LOGGER.error(e.getMessage(), e);

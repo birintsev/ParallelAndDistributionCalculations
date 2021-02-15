@@ -32,8 +32,20 @@ public class BoxWriter<T> extends Thread {
     @Override
     public void run() {
         MultiboxManager<T> manager = multiBox.getManager();
+        long startTime = System.currentTimeMillis();
+        long duration;
+
         for (T item : itemsToWrite) {
             manager.add(item, writerPriority);
         }
+
+        duration = System.currentTimeMillis() - startTime;
+
+        LOGGER.info(
+            threadName
+                + " has written all items (duration "
+                + duration
+                + "ms)"
+        );
     }
 }

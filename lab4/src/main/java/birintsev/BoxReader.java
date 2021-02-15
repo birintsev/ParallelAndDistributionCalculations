@@ -35,17 +35,27 @@ public class BoxReader<T> extends Thread {
 
     @Override
     public void run() {
+        MultiboxManager<T> manager = multiBox.getManager();
+        long startTime = System.currentTimeMillis();
+        long duration;
+
         for (int i = 0; i < itemsAmountToRead; i++) {
-            T item = multiBox.getManager().get(readerPriority);
+            T item = manager.get(readerPriority);
             accumulator.add(item);
-            LOGGER.info(threadName + " has read: " + item);
+            //LOGGER.info(threadName + " has read: " + item);
         }
+
+        duration = System.currentTimeMillis() - startTime;
+
         LOGGER.info(
             threadName
                 + " has read all "
                 + itemsAmountToRead
                 + " items: "
                 + accumulator
+                + " (duration "
+                + duration
+                + "ms)"
         );
     }
 }
